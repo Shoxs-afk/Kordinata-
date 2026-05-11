@@ -295,10 +295,13 @@ function parseDMS(str) {
 
 async function getAddress(lat, lon) {
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ru`);
+    const res = await fetch(`https://geocode-maps.yandex.ru/1.x/?apikey=e960f094-e1e5-4a8f-b64b-4f9f544ca982
+
+&geocode=${lon},${lat}&format=json&lang=ru_RU`);
     const data = await res.json();
-    if (data && data.display_name) {
-      return data.display_name.split(',').slice(0, 3).join(',').trim();
+    const members = data.response.GeoObjectCollection.featureMember;
+    if (members.length > 0) {
+      return members[0].GeoObject.metaDataProperty.GeocoderMetaData.text;
     }
   } catch(e) {}
   return null;
