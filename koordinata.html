@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koordinata → Manzil</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0f0f10;
+    color: #f0ede8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .card {
+    background: #1a1a1c;
+    border: 0.5px solid #2e2e32;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: #e8f04a;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-icon svg { width: 20px; height: 20px; }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f0ede8;
+    letter-spacing: -0.2px;
+  }
+
+  .logo-sub {
+    font-size: 12px;
+    color: #666;
+    margin-top: 1px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    background: #111113;
+    border: 0.5px solid #2e2e32;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: #f0ede8;
+    font-family: 'DM Mono', monospace;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus { border-color: #e8f04a; }
+  input[type="text"]::placeholder { color: #444; }
+
+  .hint {
+    font-size: 12px;
+    color: #555;
+    margin-top: 8px;
+  }
+
+  .btn-convert {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 13px;
+    background: #e8f04a;
+    color: #0f0f10;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn-convert:hover { opacity: 0.88; }
+  .btn-convert:active { transform: scale(0.98); }
+
+  .result-section {
+    margin-top: 1.5rem;
+    display: none;
+  }
+
+  .result-row {
+    background: #111113;
+    border: 0.5px solid #2e2e32;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .result-label {
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .result-value-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .result-value {
+    font-size: 15px;
+    color: #f0ede8;
+    font-family: 'DM Mono', monospace;
+    flex: 1;
+    word-break: break-word;
+  }
+
+  .result-value.address-val {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+  }
+
+  .btn-copy {
+    background: #1e1e21;
+    border: 0.5px solid #2e2e32;
+    border-radius: 7px;
+    color: #aaa;
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+    transition: background 0.1s, color 0.1s;
+    flex-shrink: 0;
+  }
+
+  .btn-copy:hover { background: #2a2a2e; color: #e8f04a; }
+  .btn-copy.copied { color: #6ee7b7; border-color: #6ee7b7; }
+
+  .badge-deliver {
+    display: inline-block;
+    background: #1a2e1a;
+    color: #6ee7b7;
+    font-size: 11px;
+    border-radius: 5px;
+    padding: 2px 8px;
+    margin-left: 6px;
+    border: 0.5px solid #2d5a2d;
+  }
+
+  .btn-yandex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: 0.5px solid #2e2e32;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #aaa;
+    font-size: 14px;
+    background: #111113;
+    transition: border-color 0.15s, color 0.15s;
+    margin-top: 10px;
+  }
+
+  .btn-yandex:hover { border-color: #e8f04a; color: #e8f04a; }
+
+  .loading-text {
+    font-size: 13px;
+    color: #555;
+    margin-top: 6px;
+    display: none;
+  }
+
+  .error-box {
+    background: #1f1313;
+    border: 0.5px solid #4a2020;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 1rem;
+    font-size: 14px;
+    color: #f87171;
+    display: none;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 2C7.24 2 5 4.24 5 7c0 3.75 5 11 5 11s5-7.25 5-11c0-2.76-2.24-5-5-5zm0 6.5c-.83 0-1.5-.67-1.5-1.5S9.17 5.5 10 5.5s1.5.67 1.5 1.5S10.83 8.5 10 8.5z" fill="#0f0f10"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-text">Koordinata Converter</div>
+      <div class="logo-sub">Deliver CRM uchun</div>
+    </div>
+  </div>
+
+  <label for="coordInput">Koordinatani kiriting</label>
+  <input
+    type="text"
+    id="coordInput"
+    placeholder='41°17&apos;15.5"N 69°18&apos;38.6"E'
+    autocomplete="off"
+  />
+  <p class="hint">DMS yoki decimal format qabul qilinadi</p>
+
+  <button class="btn-convert" onclick="convert()">Aylantirish →</button>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="result-section" id="resultSection">
+
+    <div class="result-row">
+      <div class="result-label">Decimal koordinata</div>
+      <div class="result-value-row">
+        <span class="result-value" id="decimalOut"></span>
+        <button class="btn-copy" onclick="copyText('decimalOut', this)">Nusxa</button>
+      </div>
+    </div>
+
+    <div class="result-row" id="addressRow">
+      <div class="result-label">
+        Manzil
+        <span class="badge-deliver">Deliver'ga shu manzilni kiriting</span>
+      </div>
+      <div class="result-value-row">
+        <span class="result-value address-val" id="addressOut"></span>
+        <button class="btn-copy" id="addressCopyBtn" onclick="copyText('addressOut', this)" style="display:none;">Nusxa</button>
+      </div>
+      <p class="loading-text" id="loadingText">Manzil qidirilmoqda...</p>
+    </div>
+
+    <a class="btn-yandex" id="yandexLink" href="#" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2C7.24 2 5 4.24 5 7c0 3.75 5 11 5 11s5-7.25 5-11c0-2.76-2.24-5-5-5zm0 6.5c-.83 0-1.5-.67-1.5-1.5S9.17 5.5 10 5.5s1.5.67 1.5 1.5S10.83 8.5 10 8.5z" fill="currentColor"/>
+      </svg>
+      Yandex Maps'da ko'rish
+    </a>
+
+  </div>
+</div>
+
+<script>
+function parseDMS(str) {
+  str = str.trim();
+  const dmsReg = /(\d+)[°\s]+(\d+)['\u2019\s]+(\d+\.?\d*)["″\u201d\s]*([NSns])[,\s]+(\d+)[°\s]+(\d+)['\u2019\s]+(\d+\.?\d*)["″\u201d\s]*([EWew])/;
+  const m = str.match(dmsReg);
+  if (m) {
+    let lat = parseFloat(m[1]) + parseFloat(m[2])/60 + parseFloat(m[3])/3600;
+    if (m[4].toUpperCase() === 'S') lat = -lat;
+    let lon = parseFloat(m[5]) + parseFloat(m[6])/60 + parseFloat(m[7])/3600;
+    if (m[8].toUpperCase() === 'W') lon = -lon;
+    return { lat, lon };
+  }
+  const decReg = /(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/;
+  const m2 = str.match(decReg);
+  if (m2) return { lat: parseFloat(m2[1]), lon: parseFloat(m2[2]) };
+  return null;
+}
+
+async function getAddress(lat, lon) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ru`);
+    const data = await res.json();
+    if (data && data.display_name) {
+      return data.display_name.split(',').slice(0, 3).join(',').trim();
+    }
+  } catch(e) {}
+  return null;
+}
+
+function copyText(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    btn.textContent = '✓ Nusxalandi';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Nusxa';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+
+async function convert() {
+  const input = document.getElementById('coordInput').value;
+  const errorBox = document.getElementById('errorBox');
+  const resultSection = document.getElementById('resultSection');
+  errorBox.style.display = 'none';
+  resultSection.style.display = 'none';
+
+  const parsed = parseDMS(input);
+  if (!parsed) {
+    errorBox.style.display = 'block';
+    errorBox.textContent = 'Format noto\'g\'ri. Misol: 41°17\'15.5"N 69°18\'38.6"E yoki 41.287639, 69.310722';
+    return;
+  }
+
+  const { lat, lon } = parsed;
+  document.getElementById('decimalOut').textContent = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+  document.getElementById('yandexLink').href = `https://yandex.uz/maps/?pt=${lon.toFixed(6)},${lat.toFixed(6)}&z=17`;
+
+  const addressOut = document.getElementById('addressOut');
+  const addressCopyBtn = document.getElementById('addressCopyBtn');
+  const loadingText = document.getElementById('loadingText');
+
+  addressOut.textContent = '';
+  addressCopyBtn.style.display = 'none';
+  loadingText.style.display = 'block';
+  resultSection.style.display = 'block';
+
+  const address = await getAddress(lat, lon);
+  loadingText.style.display = 'none';
+
+  if (address) {
+    addressOut.textContent = address;
+    addressCopyBtn.style.display = 'inline-block';
+  } else {
+    addressOut.textContent = 'Manzil topilmadi — decimal koordinatadan foydalaning';
+    addressOut.style.color = '#888';
+  }
+}
+
+document.getElementById('coordInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') convert();
+});
+</script>
+</body>
+</html>
